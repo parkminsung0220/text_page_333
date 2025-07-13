@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세계사 방탈출 게임: 시간의 미스터리</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            color: #333;
+            transition: background-color 0.5s ease;
+        }
+        .stage {
+            display: none;
+            margin: 20px auto;
+            padding: 30px;
+            max-width: 800px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            background-color: white;
+        }
+        .stage.active {
+            display: block;
+        }
+        /* --- 스테이지 1 배경 이미지 설정 --- */
+        #stage-1 { 
+            background-image: url('Whisk_bbbdf51c34 (2).jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white; /* 어두운 배경 이미지에 대비되도록 글자색을 흰색으로 변경 */
+            text-shadow: 2px 2px 4px #000000; /* 글자 가독성을 높이기 위한 그림자 효과 */
+        }
+        #stage-2 { background: linear-gradient(to bottom, #4a6a8a, #2c3e50); color: white; }
+        #stage-3 { background: linear-gradient(to bottom, #b2d3c2, #6b9e82); }
+        #stage-4 { background: linear-gradient(to bottom, #8c8c8c, #4a4a4a); color: white; }
+        #stage-5 { background: linear-gradient(to bottom, #eacda3, #d6ae7b); }
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+        .puzzle {
+            margin-bottom: 25px;
+            padding: 15px;
+            /* 배경 이미지에 맞게 반투명 배경 적용 */
+            background-color: rgba(0, 0, 0, 0.5); 
+            border-radius: 10px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            margin: 5px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-family: 'Gowun Dodum', sans-serif;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 25px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .password-digit {
+            font-size: 24px;
+            font-weight: bold;
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            margin: 0 5px;
+            background-color: #fff;
+            color: #333; /* 비밀번호 숫자는 잘 보이도록 검은색 유지 */
+        }
+        .final-password-section {
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 2px dashed #ccc;
+        }
+        .final-password-section input {
+            width: 150px;
+            text-align: center;
+            font-size: 20px;
+        }
+        #game-complete {
+            display: none;
+            padding: 50px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+        }
+        .hieroglyph {
+            width: 200px;
+            margin: 10px auto;
+            border: 2px solid #a57c00;
+            border-radius: 5px;
+            background-color: white; /* 상형문자 이미지가 잘 보이도록 흰 배경 추가 */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>세계사 방탈출: 시간의 미스터리</h1>
+    <p>주어진 문제들을 풀어 각 시대의 비밀번호 4자리를 찾아내세요!</p>
+
+    <!-- 스테이지 1: 피라미드 -->
+    <div id="stage-1" class="stage active">
+        <h2>스테이지 1: 위대한 피라미드의 비밀 (기원전 2560년)</h2>
+        <p>당신은 쿠푸 왕의 피라미드 내부, 미지의 방에서 깨어났습니다. 벽에는 고대 이집트의 상형문자가 가득합니다. 이곳을 탈출하려면 고대의 지혜를 증명해야 합니다.</p>
+
+        <div class="puzzle">
+            <p><b>문제 1:</b> 피라미드를 지키는 스핑크스는 지나가는 자에게 수수께끼를 냅니다. "아침에는 네 발, 점심에는 두 발, 저녁에는 세 발로 걷는 짐승은 무엇인가?"<br>이 수수께끼의 정답은 무엇일까요?</p>
+            <input type="text" id="s1q1">
+            <button onclick="checkAnswer(1, 1, '인간')">확인</button>
+            <span class="password-digit" id="s1d1">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 2:</b> 고대 이집트인들은 죽은 자가 다시 살아난다고 믿어 왕의 시신을 특별한 천으로 감싸 보존했습니다. 이렇게 만들어진 것을 무엇이라고 부를까요?</p>
+            <input type="text" id="s1q2">
+            <button onclick="checkAnswer(1, 2, '미라')">확인</button>
+            <span class="password-digit" id="s1d2">?</span>
+        </div>
+
+        <div class="puzzle">
+             <p><b>문제 3:</b> 아래 상형문자는 숫자 4를 의미합니다. 이 문양의 총 획수는 몇 개일까요?</p>
+             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Egyptian_Hieroglyph_004.svg/1200px-Egyptian_Hieroglyph_004.svg.png" alt="이집트 상형문자 4" class="hieroglyph">
+            <input type="text" id="s1q3">
+            <button onclick="checkAnswer(1, 3, '4')">확인</button>
+            <span class="password-digit" id="s1d3">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 4:</b> 이집트 문명은 '이 강의 선물'이라고 불릴 정도로 이 강에 크게 의존했습니다. 세계에서 가장 긴 이 강의 이름은 무엇일까요?</p>
+            <input type="text" id="s1q4">
+            <button onclick="checkAnswer(1, 4, '나일강')">확인</button>
+            <span class="password-digit" id="s1d4">?</span>
+        </div>
+
+        <div class="final-password-section">
+            <h3>최종 비밀번호</h3>
+            <p>모든 문제에서 얻은 4자리 비밀번호를 입력하여 다음 시대로 이동하세요.</p>
+            <input type="text" id="s1_final_password" maxlength="4">
+            <button onclick="submitFinalPassword(1, '8147')">탈출 시도</button>
+        </div>
+    </div>
+
+    <!-- 스테이지 2: 타이타닉 -->
+    <div id="stage-2" class="stage">
+        <h2>스테이지 2: 침몰하지 않는 배, 타이타닉 (1912년)</h2>
+        <p>차가운 북대서양 한가운데, '절대 침몰하지 않는다'던 타이타닉 호가 빙산에 부딪혔습니다. 구명보트에 타기 위해 선실의 잠긴 문을 열 비밀번호를 찾아야 합니다.</p>
+
+        <div class="puzzle">
+            <p><b>문제 1:</b> 타이타닉 호는 영국 사우샘프턴을 출발하여 어느 도시로 향하고 있었을까요? (힌트: 자유의 여신상이 있는 도시)</p>
+            <input type="text" id="s2q1">
+            <button onclick="checkAnswer(2, 1, '뉴욕')">확인</button>
+            <span class="password-digit" id="s2d1">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 2:</b> 타이타닉 호가 침몰한 해는 1912년입니다. 그렇다면 이 배가 출항한 세기는 몇 세기일까요? (숫자만 입력)</p>
+            <input type="text" id="s2q2">
+            <button onclick="checkAnswer(2, 2, '20')">확인</button>
+            <span class="password-digit" id="s2d2">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 3:</b> 타이타닉 호는 거대한 '이것'과 충돌하여 침몰했습니다. '이것'은 무엇일까요?</p>
+            <input type="text" id="s2q3">
+            <button onclick="checkAnswer(2, 3, '빙산')">확인</button>
+            <span class="password-digit" id="s2d3">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 4:</b> 타이타닉 호의 침몰 사고 이후, 배들 간의 안전한 통신을 위해 국제적인 OOOO 신호가 표준화되었습니다. 빈칸에 들어갈 모스 부호의 약자는 무엇일까요? (알파벳 3글자)</p>
+            <input type="text" id="s2q4" style="text-transform:uppercase">
+            <button onclick="checkAnswer(2, 4, 'SOS')">확인</button>
+            <span class="password-digit" id="s2d4">?</span>
+        </div>
+
+        <div class="final-password-section">
+            <h3>최종 비밀번호</h3>
+            <p>모든 문제에서 얻은 4자리 비밀번호를 입력하여 다음 시대로 이동하세요.</p>
+            <input type="text" id="s2_final_password" maxlength="4">
+            <button onclick="submitFinalPassword(2, '1912')">탈출 시도</button>
+        </div>
+    </div>
+
+    <!-- 스테이지 3: 미국 독립 -->
+    <div id="stage-3" class="stage">
+        <h2>스테이지 3: 자유를 향한 외침, 미국 독립 (1776년)</h2>
+        <p>영국의 지배에 맞서 독립을 선언한 미국, 당신은 독립 선언서에 서명할 대표단의 일원입니다. 회의장으로 들어가기 위한 암호를 해독해야 합니다.</p>
+
+        <div class="puzzle">
+            <p><b>문제 1:</b> 미국 독립 선언서가 발표된 해는 1776년입니다. 이 해의 7월 4일은 오늘날 미국의 'OOO'으로 기념되고 있습니다.</p>
+            <input type="text" id="s3q1">
+            <button onclick="checkAnswer(3, 1, '독립기념일')">확인</button>
+            <span class="password-digit" id="s3d1">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 2:</b> 독립 전쟁 당시, 식민지 주민들이 영국의 차 세금에 반대하여 보스턴 항구에 정박한 배의 차 상자를 바다에 버린 사건은 '보스턴 OOO 사건'입니다.</p>
+            <input type="text" id="s3q2">
+            <button onclick="checkAnswer(3, 2, '차')">확인</button>
+            <span class="password-digit" id="s3d2">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 3:</b> 미국의 초대 대통령으로, 독립 전쟁을 승리로 이끈 총사령관의 이름은 '조지 OOO'입니다.</p>
+            <input type="text" id="s3q3">
+            <button onclick="checkAnswer(3, 3, '워싱턴')">확인</button>
+            <span class="password-digit" id="s3d3">?</span>
+        </div>
+        
+        <div class="puzzle">
+            <p><b>문제 4:</b> 미국 국기에는 50개의 별과 13개의 줄이 있습니다. 이 중 13개의 줄은 초창기 독립에 참여한 몇 개의 주를 상징할까요? (숫자만 입력)</p>
+            <input type="text" id="s3q4">
+            <button onclick="checkAnswer(3, 4, '13')">확인</button>
+            <span class="password-digit" id="s3d4">?</span>
+        </div>
+
+        <div class="final-password-section">
+            <h3>최종 비밀번호</h3>
+            <p>모든 문제에서 얻은 4자리 비밀번호를 입력하여 다음 시대로 이동하세요.</p>
+            <input type="text" id="s3_final_password" maxlength="4">
+            <button onclick="submitFinalPassword(3, '1776')">탈출 시도</button>
+        </div>
+    </div>
+
+    <!-- 스테이지 4: 2차 세계대전 -->
+    <div id="stage-4" class="stage">
+        <h2>스테이지 4: 암호 해독, 2차 세계대전 (1944년)</h2>
+        <p>당신은 연합군의 암호 해독가입니다. 노르망디 상륙작전의 성공을 위해 적의 암호를 해독하여 중요한 정보를 빼내야 합니다. 작전 개시일이 담긴 암호를 푸세요.</p>
+
+        <div class="puzzle">
+            <p><b>문제 1:</b> 1939년, 독일이 어느 나라를 침공하면서 제2차 세계대전이 시작되었을까요?</p>
+            <input type="text" id="s4q1">
+            <button onclick="checkAnswer(4, 1, '폴란드')">확인</button>
+            <span class="password-digit" id="s4d1">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 2:</b> 연합군이 독일 점령하의 프랑스 노르망디 해안에 상륙한 역사적인 작전의 암호명은 '오퍼레이션 OOOOOO'입니다. (알파벳으로 입력)</p>
+            <input type="text" id="s4q2" style="text-transform:uppercase">
+            <button onclick="checkAnswer(4, 2, 'OVERLORD')">확인</button>
+            <span class="password-digit" id="s4d2">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 3:</b> 독일군의 암호 기계 '에니그마'를 해독하는 데 결정적인 역할을 한 영국의 수학자이자 컴퓨터 과학의 아버지로 불리는 인물은 '앨런 OO'입니다.</p>
+            <input type="text" id="s4q3">
+            <button onclick="checkAnswer(4, 3, '튜링')">확인</button>
+            <span class="password-digit" id="s4d3">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 4:</b> 2차 세계대전 이후, 전쟁 방지와 평화 유지를 위해 창설된 국제기구는 무엇일까요? (두 글자로 줄여서)</p>
+            <input type="text" id="s4q4">
+            <button onclick="checkAnswer(4, 4, '유엔')">확인</button>
+            <span class="password-digit" id="s4d4">?</span>
+        </div>
+
+        <div class="final-password-section">
+            <h3>최종 비밀번호</h3>
+            <p>모든 문제에서 얻은 4자리 비밀번호를 입력하여 다음 시대로 이동하세요.</p>
+            <input type="text" id="s4_final_password" maxlength="4">
+            <button onclick="submitFinalPassword(4, '1945')">탈출 시도</button>
+        </div>
+    </div>
+    
+    <!-- 스테이지 5: 세계의 문명 -->
+    <div id="stage-5" class="stage">
+        <h2>스테이지 5: 문명의 교차로 (시간의 끝)</h2>
+        <p>시간 여행의 끝, 모든 역사가 만나는 곳에 도달했습니다. 인류 문명의 위대한 발자취를 증명하고 마침내 현재로 돌아갈 수 있는 마지막 관문입니다.</p>
+
+        <div class="puzzle">
+            <p><b>문제 1:</b> 인류 최초의 문자로 알려진, 메소포타미아 문명에서 사용한 쐐기 모양의 문자는 무엇일까요?</p>
+            <input type="text" id="s5q1">
+            <button onclick="checkAnswer(5, 1, '설형문자')">확인</button>
+            <span class="password-digit" id="s5d1">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 2:</b> 종이를 발명하여 지식의 확산에 크게 기여한 문명은 어디일까요?</p>
+            <input type="text" id="s5q2">
+            <button onclick="checkAnswer(5, 2, '중국')">확인</button>
+            <span class="password-digit" id="s5d2">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 3:</b> 민주주의가 최초로 시작된 고대 그리스의 도시 국가 이름은 무엇일까요?</p>
+            <input type="text" id="s5q3">
+            <button onclick="checkAnswer(5, 3, '아테네')">확인</button>
+            <span class="password-digit" id="s5d3">?</span>
+        </div>
+
+        <div class="puzzle">
+            <p><b>문제 4:</b> 모든 길은 '이곳'으로 통한다는 말이 있을 정도로 거대한 제국을 건설했던 고대 문명은 어디일까요?</p>
+            <input type="text" id="s5q4">
+            <button onclick="checkAnswer(5, 4, '로마')">확인</button>
+            <span class="password-digit" id="s5d4">?</span>
+        </div>
+
+        <div class="final-password-section">
+            <h3>최종 비밀번호</h3>
+            <p>모든 문제에서 얻은 4자리 비밀번호를 입력하여 시간 여행을 마치세요.</p>
+            <input type="text" id="s5_final_password" maxlength="4">
+            <button onclick="submitFinalPassword(5, '2024')">현재로 복귀</button>
+        </div>
+    </div>
+
+    <!-- 게임 완료 -->
+    <div id="game-complete" class="stage">
+        <h2>탈출 성공!</h2>
+        <p>축하합니다! 당신은 시간의 모든 미스터리를 풀고 무사히 현재로 돌아왔습니다.<br>당신의 지혜가 역사를 지켜냈습니다!</p>
+    </div>
+
+    <script>
+        const passwords = {
+            1: { 1: '8', 2: '1', 3: '4', 4: '7' },
+            2: { 1: '1', 2: '9', 3: '1', 4: '2' },
+            3: { 1: '1', 2: '7', 3: '7', 4: '6' },
+            4: { 1: '1', 2: '9', 3: '4', 4: '5' },
+            5: { 1: '2', 2: '0', 3: '2', 4: '4' }
+        };
+
+        function checkAnswer(stage, question, correctAnswer) {
+            const userAnswer = document.getElementById(`s${stage}q${question}`).value.trim().toUpperCase();
+            const correctAnswerUpper = correctAnswer.toUpperCase();
+
+            // 한글 정답 비교를 위해 toUpperCase() 사용하지 않음
+            if (document.getElementById(`s${stage}q${question}`).value.trim() === correctAnswer) {
+                 document.getElementById(`s${stage}d${question}`).innerText = passwords[stage][question];
+                alert('정답입니다! 비밀번호 조각을 획득했습니다.');
+            } else if (userAnswer === correctAnswerUpper) { // 영문 정답은 대소문자 구분 없이
+                 document.getElementById(`s${stage}d${question}`).innerText = passwords[stage][question];
+                alert('정답입니다! 비밀번호 조각을 획득했습니다.');
+            }
+            else {
+                alert('틀렸습니다. 다시 생각해보세요.');
+            }
+        }
+
+        function submitFinalPassword(stage, correctPassword) {
+            const finalAnswer = document.getElementById(`s${stage}_final_password`).value;
+            if (finalAnswer === correctPassword) {
+                alert('비밀번호 해제! 다음 시대로 이동합니다.');
+                document.getElementById(`stage-${stage}`).classList.remove('active');
+                if (stage < 5) {
+                    document.getElementById(`stage-${stage + 1}`).classList.add('active');
+                } else {
+                    document.getElementById('game-complete').style.display = 'block';
+                }
+            } else {
+                alert('비밀번호가 틀렸습니다. 획득한 조각들을 다시 확인해주세요.');
+            }
+        }
+    </script>
+</body>
+</html>
