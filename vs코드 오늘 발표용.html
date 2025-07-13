@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마법학교 졸업 시험: 현자의 탑</title>
+    <style>
+        /* --- 기본 및 폰트 스타일 --- */
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@700&family=Nanum+Brush+Script&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+
+        /* --- 게임 월드 및 배경 --- */
+        #game-world {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+        }
+
+        /* --- 클릭 가능한 오브젝트 스타일 --- */
+        .clickable-object {
+            position: absolute;
+            cursor: pointer;
+            border: 3px solid rgba(255, 215, 0, 0);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .clickable-object:hover {
+            border: 3px solid rgba(255, 215, 0, 0.8);
+            background-color: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+        
+        .clickable-object.solved {
+            cursor: default;
+            border: 3px solid rgba(0, 255, 0, 0.7);
+            background-color: rgba(0, 255, 0, 0.2);
+        }
+
+        .clickable-object.solved:hover {
+            border: 3px solid rgba(0, 255, 0, 0.7);
+            background-color: rgba(0, 255, 0, 0.2);
+            box-shadow: none;
+        }
+
+        /* --- UI 오버레이 (상단 정보창) --- */
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0));
+            color: #fff;
+            text-align: center;
+            z-index: 10;
+        }
+
+        #ui-overlay h1 {
+            font-family: 'Nanum Myeongjo', serif;
+            color: #FFD700;
+            margin: 0;
+            text-shadow: 2px 2px 5px #000;
+        }
+
+        #ui-overlay #found-numbers-text {
+            font-size: 1.4em;
+            margin: 10px 0 0 0;
+            font-weight: bold;
+            color: #4CAF50;
+            letter-spacing: 3px;
+            height: 30px;
+        }
+
+        /* --- 모달 (팝업) 스타일 --- */
+        .modal-backdrop {
+            display: none; /* 기본 숨김 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 20;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(15, 15, 15, 0.9);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+            text-align: center;
+            color: #fff;
+        }
+
+        .modal-content h2 {
+            font-family: 'Nanum Myeongjo', serif;
+            color: #FFD700;
+            margin-top: 0;
+        }
+
+        .modal-content p {
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+
+        .modal-content input[type="text"] {
+            font-family: 'Gowun Dodum', sans-serif;
+            padding: 12px;
+            width: 200px;
+            border-radius: 5px;
+            border: 2px solid #FFD700;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .modal-content button {
+            font-family: 'Nanum Myeongjo', serif;
+            padding: 12px 25px;
+            border-radius: 5px;
+            border: 2px solid #FFD700;
+            background-color: #FFD700;
+            color: #333;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content button:hover {
+            background-color: #fff;
+            color: #000;
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            font-size: 1.1em;
+            height: 25px;
+            color: #FF5722;
+        }
+        
+        /* --- 졸업장 스타일 --- */
+        #diploma-content {
+            background: #fdf5e6; /* Parchment color */
+            color: #4a3c1a;
+            border: 8px solid #c0a060;
+            border-radius: 10px;
+            padding: 40px;
+            width: 90%;
+            max-width: 700px;
+            text-align: center;
+        }
+        #diploma-content h2 {
+            font-size: 2.5em;
+            color: #8a6d3b;
+        }
+        #diploma-content p {
+            font-size: 1.3em;
+        }
+        #diploma-signature {
+            margin-top: 40px;
+            font-family: 'Nanum Brush Script', cursive;
+            font-size: 2em;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-world">
+        <!-- 클릭 가능한 오브젝트들이 여기에 동적으로 추가됩니다. -->
+    </div>
+
+    <div id="ui-overlay">
+        <h1 id="stage-title">마법학교 졸업 시험</h1>
+        <p id="found-numbers-text">찾은 숫자: </p>
+    </div>
+
+    <div id="problem-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h2 id="modal-title">문제</h2>
+            <p id="modal-story"></p>
+            <div class="input-area">
+                <input type="text" id="modal-answer-input" placeholder="정답 입력">
+                <button id="modal-submit-button">확인</button>
+            </div>
+            <p class="feedback" id="modal-feedback-text"></p>
+        </div>
+    </div>
+    
+    <div id="gate-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h2 id="gate-modal-title">마지막 관문</h2>
+            <p>모든 단서를 찾았습니다. 문을 열 4자리 비밀번호를 입력하세요.</p>
+            <div class="input-area">
+                <input type="text" id="gate-password-input" placeholder="비밀번호 4자리" maxlength="4">
+                <button id="gate-submit-button">문 열기</button>
+            </div>
+            <p class="feedback" id="gate-feedback-text"></p>
+        </div>
+    </div>
+
+    <div id="diploma-modal" class="modal-backdrop">
+        <div id="diploma-content">
+            <h2>졸업장</h2>
+            <p>위 학생은 아르카디아 마법학교 '현자의 탑'에서 시행된<br>모든 졸업 시험을 우수한 지혜와 용기로 통과하였으므로<br>이 졸업장을 수여합니다.</p>
+            <br>
+            <p><strong>- 현명한 졸업생 -</strong></p>
+            <p><strong>당신은 역대 7번째 졸업자입니다.</strong></p>
+            <p id="diploma-signature">아르카디아 마법학교 교장</p>
+        </div>
+    </div>
+
+    <script>
+        const gameData = {
+            1: {
+                title: "1단계: 신비한 약초의 방",
+                password: "3649",
+                background: "https://i.ibb.co/nqyb0JMP/image01.jpg",
+                problems: [
+                    { id: "s1-obj-window", coords: { top: '12%', left: '38%', width: '24%', height: '35%' }, title: "문제 1: 월광초", story: "'마법 식물 도감'에 따르면 '월광초'는 보름달이 뜰 때만 잎의 수가 변합니다. 창밖을 밤으로 바꾸니 잎사귀가 <strong>3개</strong>가 되었습니다. 첫 번째 숫자는?", answer: "3", solved: false },
+                    { id: "s1-obj-shelf", coords: { top: '30%', left: '75%', width: '20%', height: '45%' }, title: "문제 2: 생명의 물약", story: "선반 위 레시피 차트에는 '생명의 물약: 붉은 약초 1, 푸른 약초 <strong>6</strong>' 이라고 적혀있습니다. 두 번째 숫자는?", answer: "6", solved: false },
+                    { id: "s1-obj-box", coords: { top: '80%', left: '5%', width: '25%', height: '15%' }, title: "문제 3: 샐러맨더", story: "작은 상자에는 '불을 먹고 자라는 도마뱀의 다리 개수는?' 라고 적혀있습니다. '마법 생물 사전'에 따르면 샐러맨더의 다리는 <strong>4개</strong>입니다. 세 번째 숫자는?", answer: "4", solved: false },
+                    { id: "s1-obj-fireplace", coords: { top: '65%', left: '38%', width: '24%', height: '20%' }, title: "문제 4: 수정 꽃", story: "벽난로 위 수정 꽃들의 꽃잎은 각각 2, 5, 8, 9, 11개입니다. '가장 적은 꽃잎과 가장 많은 꽃잎의 차이가 마지막 숫자'입니다. 네 번째 숫자는?", answer: "9", solved: false }
+                ]
+            },
+            2: {
+                title: "2단계: 고대 마법 주문의 방",
+                password: "5281",
+                background: "https://i.ibb.co/vx58sthF/Whisk-55dd61177c.jpg",
+                problems: [
+                    { id: "s2-obj-orb", coords: { top: '65%', left: '42%', width: '16%', height: '20%' }, title: "문제 1: 보호 마법", story: "중앙의 빛나는 구슬은 강력한 '보호' 마법으로 둘러싸여 있습니다. '기초 룬 문자' 책을 보니, '보호'를 뜻하는 룬 문자는 <strong>5개</strong>의 선으로 이루어져 있습니다. 첫 번째 숫자는?", answer: "5", solved: false },
+                    { id: "s2-obj-balcony", coords: { top: '20%', left: '10%', width: '20%', height: '25%' }, title: "문제 2: 교장 초상화", story: "2층 발코니의 거대한 책에는 역대 교장들의 기록이 있습니다. 메모에 '<strong>2대</strong> 교장의 초상화 뒤에 단서가 있다'고 적혀있습니다. 두 번째 숫자는?", answer: "2", solved: false },
+                    { id: "s2-obj-window", coords: { top: '5%', left: '35%', width: '30%', height: '40%' }, title: "문제 3: 사자자리", story: "거대한 창문 밖 밤하늘을 보니 별들이 가득합니다. '용기의 상징인 '사자자리'는 몇 개의 별로 이루어져 있는가?'라는 수수께끼가 있습니다. 마법으로 보니, 사자자리를 이루는 주요 별은 <strong>8개</strong>입니다. 세 번째 숫자는?", answer: "8", solved: false },
+                    { id: "s2-obj-lectern", coords: { top: '60%', left: '75%', width: '15%', height: '18%' }, title: "문제 4: 마법 주문", story: "오른쪽 책 받침대 위의 책에는 '시간을 되돌리는 주문은 7개의 단어로 이루어져 있다. 하지만 이 주문을 완성하려면 <strong>1개</strong>의 단어가 더 필요하다.' 라고 적혀있습니다. 네 번째 숫자는?", answer: "1", solved: false }
+                ]
+            },
+            3: {
+                title: "3단계: 현자의 시험",
+                password: "7309",
+                background: "https://i.ibb.co/0pyFSQvP/Whisk-f688199790.jpg",
+                problems: [
+                    { id: "s3-obj-floor", coords: { top: '70%', left: '30%', width: '40%', height: '30%' }, title: "문제 1: 바닥의 문양", story: "장엄한 홀의 바닥에는 체스판과 유사한 문양이 있습니다. '왕을 제외하고, 백색 진영에 남아있는 말의 총 개수는?' 이라는 오래된 수수께끼가 떠오릅니다. 그 답은 <strong>7</strong>입니다. 첫 번째 숫자는?", answer: "7", solved: false },
+                    { id: "s3-obj-pillar", coords: { top: '10%', left: '15%', width: '15%', height: '80%' }, title: "문제 2: 기둥의 조각", story: "왼쪽의 거대한 기둥에는 마법의 역사가 조각되어 있습니다. '마법의 역사, 제 <strong>3장</strong> 11절을 보라.'는 지시에 따라 살펴보니 숫자 <strong>3</strong>이 빛나고 있습니다. 두 번째 숫자는?", answer: "3", solved: false },
+                    { id: "s3-obj-portal", coords: { top: '45%', left: '42%', width: '16%', height: '25%' }, title: "문제 3: 4원소 포탈", story: "중앙의 포탈은 4원소의 힘으로 유지됩니다. '생명의 근원(물)과 지혜의 상징(바람)의 힘을 합치자' 포탈 중앙에 홀로그램으로 숫자 <strong>0</strong>이 나타납니다. 세 번째 숫자는?", answer: "0", solved: false },
+                    { id: "s3-obj-arch", coords: { top: '5%', left: '30%', width: '40%', height: '30%' }, title: "문제 4: 건립 연도", story: "상단의 거대한 아치에는 '위대한 마법사 멀린이 이 탑을 세운 해는 A.D. 1026년. 그 해의 각 자릿수를 모두 더한 값이 마지막 열쇠다.' 라고 새겨져 있습니다. (1+0+2+6) 네 번째 숫자는?", answer: "9", solved: false }
+                ]
+            }
+        };
+
+        // DOM 요소
+        const gameWorld = document.getElementById('game-world');
+        const uiOverlay = document.getElementById('ui-overlay');
+        const stageTitle = document.getElementById('stage-title');
+        const foundNumbersText = document.getElementById('found-numbers-text');
+        
+        const problemModal = document.getElementById('problem-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalStory = document.getElementById('modal-story');
+        const modalAnswerInput = document.getElementById('modal-answer-input');
+        const modalSubmitButton = document.getElementById('modal-submit-button');
+        const modalFeedbackText = document.getElementById('modal-feedback-text');
+
+        const gateModal = document.getElementById('gate-modal');
+        const gateModalTitle = document.getElementById('gate-modal-title');
+        const gatePasswordInput = document.getElementById('gate-password-input');
+        const gateSubmitButton = document.getElementById('gate-submit-button');
+        const gateFeedbackText = document.getElementById('gate-feedback-text');
+
+        const diplomaModal = document.getElementById('diploma-modal');
+
+        // 게임 상태 변수
+        let currentStage = 1;
+        let foundNumbers = [];
+        let currentProblem = null;
+
+        // 게임 초기화 함수
+        function initStage(stageNum) {
+            gameWorld.innerHTML = '';
+            
+            currentStage = stageNum;
+            const stage = gameData[currentStage];
+            stage.problems.forEach(p => p.solved = false);
+            
+            foundNumbers = Array(stage.problems.length).fill('_');
+
+            gameWorld.style.backgroundImage = `url('${stage.background}')`;
+
+            stageTitle.textContent = stage.title;
+            updateFoundNumbersUI();
+
+            stage.problems.forEach((problem) => {
+                const obj = document.createElement('div');
+                obj.id = problem.id;
+                obj.className = 'clickable-object';
+                obj.style.top = problem.coords.top;
+                obj.style.left = problem.coords.left;
+                obj.style.width = problem.coords.width;
+                obj.style.height = problem.coords.height;
+                
+                obj.addEventListener('click', () => {
+                    if (!problem.solved) {
+                        showProblemModal(problem);
+                    }
+                });
+                gameWorld.appendChild(obj);
+            });
+        }
+
+        // 문제 모달을 보여주는 함수
+        function showProblemModal(problem) {
+            currentProblem = problem;
+            modalTitle.textContent = problem.title;
+            modalStory.innerHTML = problem.story;
+            modalAnswerInput.value = '';
+            modalFeedbackText.textContent = '';
+            problemModal.style.display = 'flex';
+            modalAnswerInput.focus();
+        }
+
+        // 정답을 확인하는 함수
+        function checkAnswer() {
+            const userAnswer = modalAnswerInput.value.trim();
+            if (userAnswer === currentProblem.answer) {
+                modalFeedbackText.textContent = "정답입니다! 숫자를 찾았습니다.";
+                modalFeedbackText.style.color = "#4CAF50";
+                
+                currentProblem.solved = true;
+                document.getElementById(currentProblem.id).classList.add('solved');
+                
+                const problemIndex = gameData[currentStage].problems.indexOf(currentProblem);
+                foundNumbers[problemIndex] = userAnswer;
+                updateFoundNumbersUI();
+
+                setTimeout(() => {
+                    problemModal.style.display = 'none';
+                    checkStageCompletion();
+                }, 1500);
+
+            } else {
+                modalFeedbackText.textContent = "틀렸습니다. 다시 생각해보세요.";
+                modalFeedbackText.style.color = "#FF5722";
+                modalAnswerInput.value = '';
+            }
+        }
+        
+        // 스테이지 완료 여부를 확인하는 함수
+        function checkStageCompletion() {
+            if (!foundNumbers.includes('_')) {
+                gateModalTitle.textContent = `${gameData[currentStage].title} - 마지막 관문`;
+                gateModal.style.display = 'flex';
+                gatePasswordInput.focus();
+            }
+        }
+        
+        // 최종 비밀번호를 확인하는 함수
+        function checkGatePassword() {
+            const stage = gameData[currentStage];
+            const userPassword = gatePasswordInput.value.trim();
+
+            if (userPassword.length < 4) {
+                gateFeedbackText.textContent = "4자리 비밀번호를 모두 입력해주세요.";
+                gateFeedbackText.style.color = "#FF5722";
+                return;
+            }
+
+            if (userPassword === stage.password) {
+                gateFeedbackText.textContent = "성공! 문이 열립니다.";
+                gateFeedbackText.style.color = "#4CAF50";
+
+                setTimeout(() => {
+                    gateModal.style.display = 'none';
+                    gatePasswordInput.value = '';
+                    gateFeedbackText.textContent = '';
+                    
+                    const nextStage = currentStage + 1;
+                    if (gameData[nextStage]) {
+                        initStage(nextStage);
+                    } else {
+                        endGame();
+                    }
+                }, 2000);
+
+            } else {
+                gateFeedbackText.textContent = "비밀번호가 틀렸습니다.";
+                gateFeedbackText.style.color = "#FF5722";
+                gatePasswordInput.value = '';
+            }
+        }
+
+        // 찾은 번호를 화면 상단에 표시하는 함수
+        function updateFoundNumbersUI() {
+            foundNumbersText.textContent = `찾은 숫자: ${foundNumbers.join(' - ')}`;
+        }
+        
+        // 게임 종료 함수
+        function endGame() {
+            gameWorld.innerHTML = '';
+            uiOverlay.style.display = 'none';
+            diplomaModal.style.display = 'flex';
+        }
+
+        // 이벤트 리스너 연결
+        modalSubmitButton.addEventListener('click', checkAnswer);
+        modalAnswerInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') checkAnswer(); });
+        gateSubmitButton.addEventListener('click', checkGatePassword);
+        gatePasswordInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') checkGatePassword(); });
+
+        // 게임 시작
+        initStage(1);
+    </script>
+</body>
+</html>
