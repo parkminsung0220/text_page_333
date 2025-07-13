@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>물놀이 안전 수칙 확인!</title>
+    <style>
+        /* CSS: 게임의 모든 디자인을 담당합니다. */
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #333;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Malgun Gothic', sans-serif;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            max-width: 1200px;
+            width: 100%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+        }
+
+        #background-img {
+            width: 100%;
+            display: block;
+        }
+
+        .clickable-object {
+            position: absolute;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            border-radius: 50%; /* 오브젝트 영역을 원형으로 만들어 자연스럽게 */
+        }
+        .clickable-object:hover {
+            background-color: rgba(255, 255, 0, 0.4);
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+        }
+
+        /* 새 이미지에 맞춘 오브젝트 위치 및 크기 (%) */
+        #hat { top: 12%; left: 63%; width: 10%; height: 10%; }
+        #life-vest { top: 40%; left: 79%; width: 11%; height: 20%; border-radius: 20px; }
+        #clock { top: 43%; left: 35%; width: 5%; height: 7%; }
+        #beach-ball { top: 60%; left: 45%; width: 12%; height: 15%; }
+
+        #start-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: #e74c3c;
+            color: white;
+            padding: 15px 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px #c0392b;
+            transition: all 0.1s;
+        }
+        #start-button:hover { background-color: #c0392b; }
+        #start-button:active { transform: translateY(2px); box-shadow: 0 2px #c0392b; }
+
+        #info-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #hint-display, #timer-display {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #fff;
+            text-align: center;
+        }
+        #hint-display h3, #timer-display h3 { margin: 0 0 5px 0; font-size: 1em; }
+        #hint-display p, #timer-display p { margin: 0; font-size: 1.5em; letter-spacing: 5px; }
+        #timer-display p { color: #f1c40f; } /* 타이머 색상 강조 */
+
+        .hidden { display: none !important; }
+        #modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        #modal-content {
+            background-color: white; padding: 25px; border-radius: 10px;
+            text-align: center; max-width: 90%; width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        #modal-content h2 { margin-top: 0; }
+        #modal-content input {
+            padding: 10px; margin: 10px 0; width: 80%;
+            font-size: 1.2em; text-align: center;
+        }
+        #modal-content button {
+            padding: 10px 20px; border: none; background-color: #007bff;
+            color: white; border-radius: 5px; cursor: pointer;
+            font-size: 1em; margin: 5px;
+        }
+        #modal-content button.close-btn { background-color: #6c757d; }
+
+        #memory-game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px; margin-top: 20px;
+            perspective: 1000px;
+        }
+        .memory-card {
+            width: 70px; height: 70px; position: relative;
+            transform-style: preserve-3d; transition: transform 0.6s;
+            cursor: pointer;
+        }
+        .memory-card.flip { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            display: flex; justify-content: center; align-items: center;
+            border-radius: 5px;
+        }
+        .card-front { background-color: #4a90e2; }
+        .card-back {
+            background-color: #f5a623; color: white;
+            transform: rotateY(180deg); font-size: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- HTML: 게임의 구조를 담당합니다. -->
+    <div id="game-container">
+        <!-- 배경 이미지 -->
+        <img src="https://i.ibb.co/N1gQzYc/happy-students.jpg" alt="물놀이 가는 학생들" id="background-img">
+
+        <!-- 클릭 가능한 오브젝트들 -->
+        <div id="hat" class="clickable-object" title="모자"></div>
+        <div id="life-vest" class="clickable-object" title="구명조끼"></div>
+        <div id="clock" class="clickable-object" title="시계"></div>
+        <div id="beach-ball" class="clickable-object" title="비치볼"></div>
+
+        <!-- 최종 확인 버튼 (처음엔 숨김) -->
+        <div id="start-button" class="hidden">출발 준비 완료!</div>
+
+        <!-- 힌트 및 타이머 표시 영역 -->
+        <div id="info-display">
+            <div id="hint-display">
+                <h3>출발 코드</h3>
+                <p id="collected-hints">????</p>
+            </div>
+            <div id="timer-display">
+                <h3>남은 시간</h3>
+                <p id="timer">05:00</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 범용 모달 (팝업창) -->
+    <div id="modal" class="hidden">
+        <div id="modal-content">
+            <!-- 자바스크립트에 의해 내용이 채워집니다 -->
+        </div>
+    </div>
+
+    <script>
+        // JavaScript: 게임의 모든 동작을 담당합니다.
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 게임 상태 관리 ---
+            const state = {
+                puzzlesSolved: {
+                    hat: false,
+                    lifeVest: false,
+                    clock: false,
+                    beachBall: false
+                },
+                hints: { hat: '?', lifeVest: '?', clock: '?', beachBall: '?' }
+            };
+            const FINAL_PASSWORD = '8058';
+
+            // --- 타이머 변수 ---
+            let timeRemaining = 300; // 타이머 시간 설정 (5분 = 300초)
+            let timerInterval;
+
+            // --- DOM 요소 가져오기 ---
+            const gameContainer = document.getElementById('game-container');
+            const startButton = document.getElementById('start-button');
+            const collectedHintsP = document.getElementById('collected-hints');
+            const timerP = document.getElementById('timer');
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modal-content');
+
+            // --- 핵심 함수들 ---
+            const openModal = (content) => {
+                modalContent.innerHTML = content;
+                modal.classList.remove('hidden');
+            };
+            const closeModal = () => modal.classList.add('hidden');
+
+            const updateHintsDisplay = () => {
+                collectedHintsP.textContent = `${state.hints.hat}${state.hints.lifeVest}${state.hints.clock}${state.hints.beachBall}`;
+            };
+
+            const checkAllPuzzlesSolved = () => {
+                const allSolved = Object.values(state.puzzlesSolved).every(solved => solved);
+                if (allSolved) {
+                    startButton.classList.remove('hidden');
+                }
+            };
+            
+            const handlePuzzleCompletion = (puzzleKey, hintValue, message) => {
+                if (state.puzzlesSolved[puzzleKey]) {
+                    alert('이미 확인한 항목입니다!');
+                    return false;
+                }
+                state.puzzlesSolved[puzzleKey] = true;
+                state.hints[puzzleKey] = hintValue;
+                updateHintsDisplay();
+                if(message) alert(message);
+                checkAllPuzzlesSolved();
+                return true;
+            };
+
+            // --- 타이머 관련 함수 ---
+            const formatTime = (seconds) => {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+            };
+
+            const gameOver = (reason) => {
+                clearInterval(timerInterval); // 타이머 중지
+                const message = reason === 'time' ? '시간 초과! 다음 기회에...' : '탈출 성공!';
+                gameContainer.innerHTML = `<div style="color:white; font-size: 2em; text-align:center; padding: 50px; background-color: #c0392b; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">${message}</div>`;
+            };
+
+            const startTimer = () => {
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    timerP.textContent = formatTime(timeRemaining);
+
+                    if (timeRemaining <= 0) {
+                        gameOver('time');
+                    }
+                }, 1000);
+            };
+
+            // --- 오브젝트 클릭 이벤트 설정 ---
+            document.getElementById('hat').addEventListener('click', () => { // 문제 1
+                if (state.puzzlesSolved.hat) { alert('이미 확인한 항목입니다!'); return; }
+                openModal(`
+                    <h2>퀴즈 1: 모자</h2>
+                    <p>뜨거운 햇볕으로부터 우리 몸을 보호해야 해요. 준비됐나요?</p>
+                    <button onclick="checkQuizAnswer()">네, 준비됐어요!</button>
+                `);
+            });
+            
+            document.getElementById('life-vest').addEventListener('click', () => { // 힌트
+                const message = '구명조끼는 안전을 위한 필수품! 안쪽에 O(영) 모양의 라벨이 붙어있네요.\n\n두 번째 출발 코드는 [0] 입니다.';
+                handlePuzzleCompletion('lifeVest', '0', message);
+            });
+
+            document.getElementById('clock').addEventListener('click', () => { // 문제 2 (개수 세기)
+                if (state.puzzlesSolved.clock) { alert('이미 확인한 항목입니다!'); return; }
+                openModal(`
+                    <h2>퀴즈 2: 인원 확인</h2>
+                    <p>즐거운 물놀이를 위해 친구들이 모두 모였어요. 사진에 있는 사람은 총 몇 명일까요?</p>
+                    <input type="number" id="count-input" placeholder="숫자를 입력하세요">
+                    <button id="count-submit">확인</button>
+                `);
+                document.getElementById('count-submit').addEventListener('click', () => {
+                    if(document.getElementById('count-input').value === '5') {
+                        const message = '정답! 5명 모두 모였네요! 세 번째 출발 코드는 [5] 입니다.';
+                        handlePuzzleCompletion('clock', '5', message);
+                        closeModal();
+                    } else {
+                        alert('틀렸습니다. 다시 세어보세요!');
+                    }
+                });
+            });
+            
+            document.getElementById('beach-ball').addEventListener('click', () => { // 미니게임
+                if (state.puzzlesSolved.beachBall) { alert('이미 확인한 항목입니다!'); return; }
+                openModal(`<h2>미니 게임: 안전용품 짝 맞추기</h2><p>물놀이에 필요한 물건들의 짝을 맞춰주세요.</p><div id="memory-game-board"></div>`);
+                initializeMemoryGame();
+            });
+
+            startButton.addEventListener('click', () => {
+                openModal(`
+                    <h2>출발 준비 완료!</h2>
+                    <p>모든 준비를 마쳤습니다. 4자리 출발 코드를 입력하세요.</p>
+                    <input type="number" id="password-input" maxlength="4" placeholder="????">
+                    <button id="password-submit">출발!</button>
+                `);
+                document.getElementById('password-submit').addEventListener('click', () => {
+                    if (document.getElementById('password-input').value === FINAL_PASSWORD) {
+                        clearInterval(timerInterval); // 성공 시 타이머 중지
+                        alert('정답입니다! 즐거운 물놀이를 떠나요!');
+                        closeModal();
+                        document.getElementById('game-container').innerHTML = `<div style="color:white; font-size: 2em; text-align:center; padding: 50px; background-color: #2980b9; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">안전하고 즐거운 물놀이 되세요!</div>`;
+                    } else {
+                        alert('코드가 틀렸습니다. 힌트를 다시 확인해보세요.');
+                    }
+                });
+            });
+            
+            // --- 동적 함수들 (모달 내부에서 호출되므로 window에 할당) ---
+            window.checkQuizAnswer = () => {
+                const message = '좋아요! 첫 번째 출발 코드는 [8] 입니다.';
+                handlePuzzleCompletion('hat', '8', message);
+                closeModal();
+            };
+            
+            function initializeMemoryGame() {
+                const board = document.getElementById('memory-game-board');
+                const symbols = ['튜브', '조끼', '모자', '고글', '튜브', '조끼', '모자', '고글'];
+                symbols.sort(() => 0.5 - Math.random());
+
+                let flippedCards = []; let matchedPairs = 0; let lockBoard = false;
+
+                board.innerHTML = '';
+                symbols.forEach(symbol => {
+                    const card = document.createElement('div');
+                    card.classList.add('memory-card');
+                    card.dataset.symbol = symbol;
+                    card.innerHTML = `<div class="card-face card-front"></div><div class="card-face card-back">${symbol}</div>`;
+                    board.appendChild(card);
+                    
+                    card.addEventListener('click', () => {
+                        if (lockBoard || card.classList.contains('flip')) return;
+                        card.classList.add('flip'); flippedCards.push(card);
+
+                        if (flippedCards.length === 2) {
+                            lockBoard = true;
+                            const [card1, card2] = flippedCards;
+                            if (card1.dataset.symbol === card2.dataset.symbol) {
+                                matchedPairs++; flippedCards = []; lockBoard = false;
+                                if (matchedPairs === symbols.length / 2) {
+                                    setTimeout(() => {
+                                        const message = '완벽해요! 마지막 출발 코드는 [8] 입니다.';
+                                        handlePuzzleCompletion('beachBall', '8', message);
+                                        closeModal();
+                                    }, 500);
+                                }
+                            } else {
+                                setTimeout(() => {
+                                    card1.classList.remove('flip'); card2.classList.remove('flip');
+                                    flippedCards = []; lockBoard = false;
+                                }, 1000);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // --- 게임 시작 ---
+            updateHintsDisplay();
+            startTimer();
+        });
+    </script>
+</body>
+</html>
